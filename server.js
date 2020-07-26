@@ -1,47 +1,39 @@
-
-const express = require('express');
-const SerialPort = require('serialport');
-const socketIo = require('socket.io');
-
+const express = require("express");
+const SerialPort = require("serialport");
+const socketIo = require("socket.io");
 
 const app = express();
-app.set('port', process.env.PORT || 3000);
+app.set("port", process.env.PORT || 3000);
 
-app.use(express.urlencoded({ extended:false}))
+var number;
+var number2;
+var number3;
+var vec;
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+app.use(function (req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  next();
+});
 
-app.get('/', function (req, res) {
-   res.send('Arquitectura Avanzada Equipo 1 is running...')
+app.get("/", function (req, res) {
+  res.send("Arquitectura Avanzada Equipo 1 is running...");
 });
 
 //http://localhost:3001/sensor1
-app.get('/sensor1', function (req, res) {
-  try{
-      mySerial.write("SCAN(1,1)\n");
-      parser.on('data', function (data) {
-      console.log(data);
-      res.send({ sensor1: data});
-    });
+app.get("/sensor", function (req, res) {
+  mySerial.write("SCAN(0,2)\n");
+  parser.on("data", function (response) {
+    console.log("hola " + response);
 
-     // res.send({ sensor1: 'data'});
-  }
-  catch(e){
-    res.send(e);
-  }
-})
-
-//http://localhost:3001/sensor2
-app.get('/sensor2', function (req, res) {
-  res.send({ sensor2: 'datasensor2' 
-  })
-})
-
-//http://localhost:3001/sensor3
-app.get('/sensor3', function (req, res) {
-  res.send({ sensor3: 'datasensor3' 
-  })
-})
+    number = response;
+  });
+  res.send({ speed: number, fuel: number2, capacity: number3 });
+});
 
 /*
 //http://localhost:3001/led1On
@@ -60,15 +52,14 @@ app.get('/led1Off', function(req, res) {
   })
 })
 */
-app.listen(app.get('port'), ()=> {
-  console.log(`server running on port ${app.get('port')}`);
-})
-
+app.listen(app.get("port"), () => {
+  console.log(`server running on port ${app.get("port")}`);
+});
 
 const Readline = SerialPort.parsers.Readline;
-const parser = new Readline({delimiter: '\r\n'});
-const mySerial = new SerialPort("COM3", { 
-  baudRate: 9600
+const parser = new Readline({ delimiter: "\r\n" });
+const mySerial = new SerialPort("COM5", {
+  baudRate: 9600,
 });
 mySerial.pipe(parser);
 
@@ -82,8 +73,6 @@ mySerial.on('open', function(){
   });
   
 });*/
-
-
 
 /*
 const Readline = SerialPort.parsers.Readline;
