@@ -1,4 +1,5 @@
 var nodemailer = require('nodemailer');
+const express = require("express");
 
 var transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -8,17 +9,19 @@ var transporter = nodemailer.createTransport({
   }
 });
 
-var mailOptions = {
-  from: 'arquitectura.avanzada.grupo1@gmail.com',
-  to: 'm.popovich20@gmail.com',
-  subject: 'Sending Email using Node.js',
-  text: 'JURUJUJAJA averigua con que te estoy enviando este correo ???????'
-};
+app.get("/mail", function (req, res) {
+  var mailOptions = {
+    from: 'arquitectura.avanzada.grupo1@gmail.com',
+    to: req.mailTo,
+    subject: 'Limit exceeded',
+    text: `Limite excedido del sensor ${req.name} a las ${req.date}`
+  };
 
-transporter.sendMail(mailOptions, function(error, info){
-  if (error) {
-    console.log(error);
-  } else {
-    console.log('Email sent: ' + info.response);
-  }
+  transporter.sendMail(mailOptions, function(error, info){
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Email sent: ' + info.response);
+    }
+  });
 });

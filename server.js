@@ -1,5 +1,6 @@
 const express = require("express");
 const SerialPort = require("serialport");
+var nodemailer = require('nodemailer');
 const socketIo = require("socket.io");
 
 const app = express();
@@ -51,13 +52,40 @@ app.get("/led/:action", function (req, res) {
   }, 2000);
 });
 
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'arquitectura.avanzada.grupo1@gmail.com',
+    pass: 'Arq123456'
+  }
+});
+
+app.post("/mail", function (req, res) {
+  console.log("que numero viene: " + req.body.num);
+
+  var mailOptions = {
+    from: 'arquitectura.avanzada.grupo1@gmail.com',
+    to: req.body.emailTo,
+    subject: 'Limit exceeded',
+    text: `Limite excedido del sensor ${req.body.name} a las ${req.body.date}`
+  };
+
+  transporter.sendMail(mailOptions, function(error, info){
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Email sent: ' + info.response);
+    }
+  });
+});
+
 app.listen(app.get("port"), () => {
   console.log(`server running on port ${app.get("port")}`);
 });
 
 const Readline = SerialPort.parsers.Readline;
 const parser = new Readline({ delimiter: "\r\n" });
-const mySerial = new SerialPort("COM5", {
+const mySerial = new SerialPort("COM3", {
   baudRate: 9600,
 });
 mySerial.pipe(parser);
