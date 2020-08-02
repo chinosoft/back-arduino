@@ -5,8 +5,12 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+<<<<<<< HEAD
     "start": "node main.js",
     "dev": "nodemon mailer.js"
+=======
+    "start": "node server.js"
+>>>>>>> e99aa0a0ba452f8e269e26ce875883f1e27f6ad9
   },
   "author": "Chino",
   "license": "ISC",
