@@ -3,45 +3,69 @@ const express = require('express');
 const SerialPort = require('serialport');
 const socketIo = require('socket.io');
 
+const Readline = SerialPort.parsers.Readline;
+const parser = new Readline({delimiter: '\r\n'});
+const mySerial = new SerialPort("COM3", { 
+  baudRate: 9600
+});
+
+mySerial.pipe(parser);
 
 const app = express();
 app.set('port', process.env.PORT || 3000);
-
 app.use(express.urlencoded({ extended:false}))
 app.use(express.json());
 
 
 app.get('/', function (req, res) {
-   res.send('Arquitectura Avanzada Equipo 1 is running...')
+   res.status(200).send('Arquitectura Avanzada Equipo 1 is running..now.')
 });
 
-//http://localhost:3001/sensor1
-app.get('/sensor1', function (req, res) {
-  try{
-      mySerial.write("SCAN(1,1)\n");
-      parser.on('data', function (data) {
-      console.log(data);
-      res.send({ sensor1: data});
-    });
+app.get('/chino', function (req, res) {
+  res.status(201).send('Chino Capo')
+});
 
-     // res.send({ sensor1: 'data'});
-  }
-  catch(e){
-    res.send(e);
-  }
+
+app.get('/sensor1', (req, res, next) => {
+  const myS = mySerial.write("SCAN(1,1)\n");
+  const dato = parser.on("data", num => {
+      
+  })
+  res.json({
+    data: dato 
 })
+console.log(dato);
+});
+
 
 //http://localhost:3001/sensor2
 app.get('/sensor2', function (req, res) {
-  res.send({ sensor2: 'datasensor2' 
-  })
+  try{
+    mySerial.write("SCAN(2,1)\n");
+    parser.on('data', function (data) {
+    console.log(data);
+    res.send({ sensor2: data});
+  });
+
+   // res.send({ sensor2: 'data'});
+}
+catch(e){
+  res.send(e);
+}
 })
+
 
 //http://localhost:3001/sensor3
 app.get('/sensor3', function (req, res) {
   res.send({ sensor3: 'datasensor3' 
   })
 })
+
+
+app.listen(app.get('port'), ()=> {
+  console.log(`server running on port ${app.get('port')}`);
+})
+
 
 /*
 //http://localhost:3001/led1On
@@ -60,17 +84,9 @@ app.get('/led1Off', function(req, res) {
   })
 })
 */
-app.listen(app.get('port'), ()=> {
-  console.log(`server running on port ${app.get('port')}`);
-})
 
 
-const Readline = SerialPort.parsers.Readline;
-const parser = new Readline({delimiter: '\r\n'});
-const mySerial = new SerialPort("COM3", { 
-  baudRate: 9600
-});
-mySerial.pipe(parser);
+
 
 /*
 mySerial.on('open', function(){
@@ -102,7 +118,7 @@ mySerial.on('open', function(){
         console.log(dado);
   })
 });
-/*
+
 parser.on('data', function (data){
   console.log(data);
 });
