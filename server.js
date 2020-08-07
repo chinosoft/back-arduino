@@ -3,6 +3,9 @@ const SerialPort = require("serialport");
 var nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
 const socketIo = require("socket.io");
+const Excel = require("exceljs");
+
+const excel_file_path = "excel_templates/vehicledata_excel_file.xlsx";
 
 const app = express();
 app.set("port", process.env.PORT || 3000);
@@ -38,9 +41,18 @@ app.get("/", function (req, res) {
 });
 
 app.get("/vehicle-data", (req, resp) => {
-  vehicleRef.once("value", (snap) => {
-    resp.status(200).json(snap.val());
-  });
+  vehicleRef.once(
+    "value",
+    function (snapData) {
+      var count = snapData.numChildren();
+      console.log("count : " + count);
+
+      readWriteToExcelfile(snapData);
+    },
+    function (errorObj) {
+      console.log("function(errorObj)");
+    }
+  );
 });
 
 app.get("/sensor", function (req, res) {
@@ -130,3 +142,40 @@ const mySerial = new SerialPort("COM3", {
   baudRate: 9600,
 });
 mySerial.pipe(parser);
+
+function readWriteToExcelfile(snapData) {
+  // create a workbook variable
+  var workbook = new Excel.Workbook();
+
+  // read excel file from the path
+  workbook.xlsx.readFile(excel_file_path).then(function () {
+    // access the excel sheet
+    var worksheet = workbook.getWorksheet("Hoja1");
+
+    addRowsToExcelSheet(snapData, workbook, worksheet);
+  });
+}
+
+// code to write data into excel sheet
+function addRowsToExcelSheet(snapData, workbook, worksheet) {
+  // for loop to read each record from Products table
+  snapData.forEach(function (data) {
+    // get value for the record
+    const val = data.val();
+
+    // Add a row by sparse Array (assign to columns)
+    var rowValues = [];
+    rowValues[1] = val.speed;
+    rowValues[2] = val.fuel;
+    rowValues[3] = val.capacity;
+    rowValues[4] = val.date;
+
+    // add row to worksheet
+    worksheet.addRow(rowValues);
+  });
+
+  //write file function to save all the data to the excel template file.
+  workbook.xlsx.writeFile(excel_file_path).then(function () {
+    console.log("saved to excel file successfully");
+  });
+}
